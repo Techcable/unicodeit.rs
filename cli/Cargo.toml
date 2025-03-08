@@ -1,0 +1,18 @@
+[package]
+name = "unicodeit-cli"
+description = "The command line interface to unicodeit"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+readme.workspace = true
+
+[dependencies]
+# TODO: Is clap truly necessary for this?
+clap = { version = "4.5", features = ["cargo"] }
+unicodeit = { path = "..", version = "0.1.0" }
+
+[[bin]]
+name = "unicodeit"
+path = "src/main.rs"

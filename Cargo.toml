@@ -1,0 +1,43 @@
+[package]
+name = "unicodeit"
+description = "Converts LaTeX to Unicode (rust port)"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+readme.workspace = true
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+homepage = "https://www.unicodeit.net"
+repository = "https://github.com/Techcable/unicodeit.rs"
+license = "MIT AND LPPL-1.3c"
+readme = "README.md"
+rust-version = "1.80"
+
+[dependencies]
+aho-corasick = "1"
+memchr = "2.7"
+regex = { version = "1", optional = true }
+
+[dev-dependencies]
+paste = "1"
+cfg-if = "1"
+itertools = "0.13"
+
+[workspace]
+resolver = "2"
+members = ["./cli"]
+
+
+[features]
+# Expose the naive implementation of the `replace` function
+#
+# This is intended primarily for testing.
+# It is currently broken in some cases, and consequnetly is unsupported.
+# naive-impl = ["dep:regex"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("naive-impl"))'] }
