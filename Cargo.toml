@@ -31,7 +31,7 @@ criterion = {  version = "0.5", features = ["html_reports"] }
 
 [workspace]
 resolver = "2"
-members = ["./cli"]
+members = ["./cli", "./fuzz"]
 
 
 [features]

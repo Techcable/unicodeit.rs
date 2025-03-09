@@ -185,15 +185,20 @@ pub fn replace(text: &str) -> String {
     text = do_sub_super_group_expansion(&text, "_{", |c: char| {
         matches!(
             c,
-            '0'..='9' | '\u{03B2}' | '\u{03B3}' | '\u{03C1}' | '\u{03C6}' | '\u{03C7}' | '\u{2212}'
-        ) || (c.is_ascii() && memchr::memchr(c as u8, b"+-=()<>-aeoxjhklmnpstiruv").is_some())
+            // there is a [+-=] group in the regex.
+            // Whether the unescaped `-` is intentional or not, we need to respect it
+            '0'..='9' | '+'..='=' | '\u{03B2}' | '\u{03B3}' | '\u{03C1}' | '\u{03C6}' | '\u{03C7}' | '\u{2212}'
+        ) || (c.is_ascii() && memchr::memchr(c as u8, b"()<>-aeoxjhklmnpstiruv").is_some())
     });
 
     // expand groups of superscripts: \^{01234}
     text = do_sub_super_group_expansion(&text, "^{", |c: char| {
         matches!(
             c,
-            '0'..='9'
+            // there is a [+-=] group in the regex.
+            // Whether the unescaped `-` is intentional or not, we need to respect it
+            '0'..='9' |
+            '+'..='='
                 | '\u{03B2}'
                 | '\u{03B3}'
                 | '\u{03B4}'
@@ -202,11 +207,8 @@ pub fn replace(text: &str) -> String {
                 | '\u{222B}'
                 | '\u{2212}'
         ) || (c.is_ascii()
-            && memchr::memchr(
-                c as u8,
-                b"+-=()<>ABDEGHIJKLMNOPRTUWabcdefghijklmnoprstuvwxyz",
-            )
-            .is_some())
+            && memchr::memchr(c as u8, b"()<>ABDEGHIJKLMNOPRTUWabcdefghijklmnoprstuvwxyz")
+                .is_some())
     });
 
     // now replace subsuperscripts
@@ -254,32 +256,39 @@ pub fn replace(text: &str) -> String {
                 crate::data::COMBINING_MARKS_ESCAPED_LATEX[initial_find.pattern().as_usize()];
             let finder = memchr::memmem::Finder::new(escaped_latex);
             while let Some(found_index) = finder.find(text.as_bytes()) {
-                if text.len() <= found_index + escaped_latex.len() {
+                debug_assert!(
+                    text.is_char_boundary(found_index),
+                    "guaranteed by utf8 invariants"
+                );
+                let after_found = &text[found_index + escaped_latex.len()..];
+                let mut chars = after_found.chars();
+                let Some(combined_char) = chars.next() else {
                     // incomplete: unescape and continue
                     text.truncate(found_index);
                     text.push_str(original_command);
                     text.push('{');
                     continue;
-                }
-                match text[found_index + escaped_latex.len()..].chars().next() {
-                    None => {
-                        // incomplete: unescape and continue
-                        text.truncate(found_index);
-                        text.push_str(original_command);
-                        text.push('{');
-                        continue;
-                    }
-                    Some(combined_char) => {
-                        let char_offset = combined_char.len_utf8() + 1;
-                        let resume_index =
-                            (found_index + escaped_latex.len() + char_offset).min(text.len());
-                        replace_buffer.clear();
-                        replace_buffer.push(combined_char);
-                        assert!(replace_buffer.len() + result_text.len() < 16);
-                        replace_buffer.push_str(result_text);
-                        text.replace_range(found_index..resume_index, &replace_buffer);
-                    }
-                }
+                };
+
+                // original source:
+                // combined_char = f[i + len(escaped_latex)]
+                //
+                // remainder = ''
+                // if len(f) >= i + len(escaped_latex) + 2:
+                //     remainder = f[i + len(escaped_latex) + 2:]
+                // f = f[:i] + combined_char + c[1] + remainder
+
+                let char_offset = if chars.next().is_some() {
+                    after_found.len() - chars.as_str().len()
+                } else {
+                    after_found.len()
+                };
+                debug_assert!(char_offset >= 2);
+                let resume_index = found_index + escaped_latex.len() + char_offset;
+                replace_buffer.clear();
+                replace_buffer.push(combined_char);
+                replace_buffer.push_str(result_text);
+                text.replace_range(found_index..resume_index, &replace_buffer);
             }
         }
     }

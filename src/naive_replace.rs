@@ -4,6 +4,7 @@
 //! This implementation is much less efficient than the other one.
 
 use regex::Regex;
+use std::ops::Range;
 use std::sync::LazyLock;
 
 /// A naive implementation of the [`crate::replace`] function,
@@ -55,6 +56,32 @@ pub fn replace(text: &str) -> String {
         orig_text: &str,
         replace_char: char,
     ) -> String {
+        /// Emulate python signed slice logic
+        fn signed_slice(s: &str, r: Range<isize>) -> &str {
+            let signed_index = |i: isize| {
+                if i >= 0 {
+                    Some(i as usize)
+                } else {
+                    // overflow should never really happen here
+                    let res = (s.len() as isize).checked_add(i).unwrap();
+                    if res >= 0 {
+                        Some(res as usize)
+                    } else {
+                        None // underflow
+                    }
+                }
+            };
+            let start = signed_index(r.start);
+            let end = signed_index(r.end);
+            let real_index = match (start, end) {
+                // underflow
+                (None, Some(end)) => 0..end.max(r.len()),
+                (Some(start), Some(end)) if start <= end => start..end,
+                // end underflow || start > end => empty slice
+                (Some(_), None) | (None, None) | (Some(_), Some(_)) => 0..0,
+            };
+            &s[real_index]
+        }
         assert!(matches!(replace_char, '^' | '_'));
         let mut offset = 0isize;
         let mut text = orig_text.to_string();
@@ -71,10 +98,12 @@ pub fn replace(text: &str) -> String {
             // f = f[:s.start() + offset] + newstring + f[s.end() + offset:]
             let mut buffer = String::with_capacity(text.len() + new_string.len());
             {
-                let offset = usize::try_from(offset).unwrap();
-                buffer.push_str(&text[..s.start() + offset]);
+                buffer.push_str(signed_slice(&text, 0..(s.start() as isize + offset)));
                 buffer.push_str(&new_string);
-                buffer.push_str(&text[s.end() + offset..]);
+                buffer.push_str(signed_slice(
+                    &text,
+                    (s.end() as isize + offset)..(text.len() as isize),
+                ));
             }
             text = buffer;
             let count = isize::try_from(count).unwrap();
@@ -131,29 +160,25 @@ pub fn replace(text: &str) -> String {
         scratch_buffer.push('{');
         let escaped_latex = &scratch_buffer;
         while let Some(find_index) = find(&text, escaped_latex) {
-            if text.len() <= find_index + escaped_latex.len() {
+            let after_find = &text[find_index + escaped_latex.len()..];
+            let mut chars = after_find.chars();
+            let Some(combined_char) = chars.next() else {
                 // incomplete: unescape and continue
                 text.truncate(find_index);
                 text.push_str(key);
                 text.push('{');
                 continue;
-            }
-            let combined_char = text[find_index + escaped_latex.len()..]
-                .chars()
-                .next()
-                .unwrap();
-
-            let char_offset = combined_char.len_utf8() + 1;
-            let remainder = if text.len() >= find_index + escaped_latex.len() + char_offset {
-                text[find_index + escaped_latex.len() + char_offset..].to_string()
-            } else {
-                String::new()
             };
 
-            text.truncate(find_index);
-            text.push(combined_char);
-            text.push_str(val);
-            text.push_str(&remainder);
+            let char_offset = if chars.next().is_some() {
+                after_find.len() - chars.as_str().len()
+            } else {
+                after_find.len()
+            };
+            text.replace_range(
+                find_index..(find_index + escaped_latex.len() + char_offset),
+                &format!("{combined_char}{val}"),
+            );
         }
     }
 

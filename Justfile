@@ -33,4 +33,6 @@ regen:
     python3 regen.py
     rustfmt --check -- src/data.rs
 
-
+# Run the upstream code
+upstream arg:
+    PYTHONPATH="./unicodeit" python3 -m unicodeit.cli '{{arg}}'
