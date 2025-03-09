@@ -10,7 +10,7 @@ readme.workspace = true
 
 [workspace.package]
 edition = "2024"
-version = "0.1.0"
+version = "0.1.1"
 homepage = "https://www.unicodeit.net"
 repository = "https://github.com/Techcable/unicodeit.rs"
 license = "MIT AND LPPL-1.3c"

@@ -11,7 +11,7 @@ readme.workspace = true
 [dependencies]
 # TODO: Is clap truly necessary for this?
 clap = { version = "4.5", features = ["cargo"] }
-unicodeit = { path = "..", version = "0.1.0" }
+unicodeit = { path = "..", version = "0.1.1" }
 
 [[bin]]
 name = "unicodeit"
