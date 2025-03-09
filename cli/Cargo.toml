@@ -16,3 +16,7 @@ unicodeit = { path = "..", version = "0.1.0" }
 [[bin]]
 name = "unicodeit"
 path = "src/main.rs"
+
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/unicodeit-{version}-{ target }"
+pkg-fmt = "bin"
