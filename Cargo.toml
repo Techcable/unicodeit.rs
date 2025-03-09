@@ -37,7 +37,7 @@ members = ["./cli"]
 #
 # This is intended primarily for testing.
 # It is currently broken in some cases, and consequnetly is unsupported.
-# naive-impl = ["dep:regex"]
+naive-impl = ["dep:regex"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("naive-impl"))'] }
