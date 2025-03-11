@@ -3,6 +3,7 @@
 // unicodeit.__version__: 0.7.5
 //
 // SPDX-License-Identifier: MIT AND LPPL-1.3c
+#![allow(dead_code)]
 
 /// The version of the upstream [unicodeit project]
 /// where the library's data has been generated from.

@@ -30,6 +30,7 @@ def regenerate_data(base_dir=Path(__file__).parent):
         print(f"// unicodeit.__version__: {unicodeit.__version__}")
         print("//")
         print("// SPDX-License-Identifier: MIT AND LPPL-1.3c")
+        print("#![allow(dead_code)]")
         print()
         print("/// The version of the upstream [unicodeit project]")
         print("/// where the library's data has been generated from.")

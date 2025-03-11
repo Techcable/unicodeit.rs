@@ -10,7 +10,7 @@ readme.workspace = true
 
 [workspace.package]
 edition = "2024"
-version = "0.1.1"
+version = "0.2.0"
 homepage = "https://www.unicodeit.net"
 repository = "https://github.com/Techcable/unicodeit.rs"
 license = "MIT AND LPPL-1.3c"
@@ -20,11 +20,11 @@ rust-version = "1.80"
 [dependencies]
 aho-corasick = "1"
 memchr = "2.7"
-regex = { version = "1", optional = true }
+regex = "1"
+cfg-if = "1"
 
 [dev-dependencies]
 paste = "1"
-cfg-if = "1"
 itertools = "0.13"
 
 [workspace]
@@ -35,9 +35,27 @@ members = ["./cli"]
 [features]
 # Expose the naive implementation of the `replace` function
 #
-# This is intended primarily for testing.
-# It is currently broken in some cases, and consequnetly is unsupported.
-naive-impl = ["dep:regex"]
+# This function is currently less buggy than the optimized implementation,
+# so it is the default implementation of `replace`.
+#
+# This feature flag simply exposes the naive implementation as part of the public API.
+# It does not affect the default implementation and is primarily intended for testing.
+naive-impl = []
+# Expose the optimized implementation of the `replace` function.
+#
+# While faster and avoiding regex bloat,
+# this is sometimes inconsistent with the behavior of the original library.
+# For this reason, it is not the default implementation.
+#
+# This feature flag simply exposes the optimized implementation as part of the pub API.
+# It does not affect the default implementation and is primarily intended for testing.
+optimized-impl = []
+# Prefer the optimized implementation of the `replace` function instead of the naive implementation.
+#
+# The behavior may occasionally differ from the orgiinal library,
+# but avoids the `regex` dependency and is much more efficient.
+prefer-optimized-impl = []
+
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("naive-impl"))'] }

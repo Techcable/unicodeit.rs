@@ -32,4 +32,5 @@ format:
 regen:
     python3 regen.py
     rustfmt --check -- src/data.rs
-    
+
+

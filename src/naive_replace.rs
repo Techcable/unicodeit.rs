@@ -9,7 +9,10 @@ use std::sync::LazyLock;
 /// A naive implementation of the [`crate::replace`] function,
 /// which more directly matches the Python code.
 ///
-/// This is intended primarily for testing.
+/// The behavior of this function should exactly match the behavior
+/// of the original library, but requires the `regex` crate to opperate.
+/// In addition to the cost of using `regex`,
+/// each invocation requires several thousand reallocations of the input string.
 pub fn replace(text: &str) -> String {
     // Catch cases like \not\subset and \not\in and convert them to
     // use the combining character slash as in \slash{\subset}

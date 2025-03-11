@@ -33,7 +33,11 @@ fn replace_with<'a, M, R>(
     buffer
 }
 
-/// Replace the LaTeX characters with Unicode equivalents wherever possible.
+/// An optimized implementation of the [`crate::replace`] function
+/// that avoids frequent reallocation and regular expressions.
+///
+/// Currently, this implementation may be inconsistent with the python implementation
+/// in some cases. For this reason, this is not the default implementation of the replace function.
 pub fn replace(text: &str) -> String {
     // Catch cases like \not\subset and \not\in and convert them to
     // use the combining character slash as in \slash{\subset}
