@@ -166,7 +166,7 @@ pub fn replace(text: &str) -> String {
             |&_start_index, remaining_text| {
                 let end_index = memchr::memchr(b'}', remaining_text.as_bytes())?;
                 let target_text = &remaining_text[2..end_index];
-                if target_text.chars().all(&is_target_char) {
+                if !target_text.is_empty() && target_text.chars().all(&is_target_char) {
                     Some((target_text.len() + 3, target_text))
                 } else {
                     None

@@ -31,7 +31,7 @@ pub fn version_info() -> String {
 pub fn replace(text: &str) -> String {
     cfg_if::cfg_if! {
         if #[cfg(feature = "prefer-optimized-impl")] {
-            naive_replace::replace(text)
+            optimized_replace::replace(text)
         } else {
             naive_replace::replace(text)
         }
