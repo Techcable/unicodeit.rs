@@ -26,10 +26,12 @@ cfg-if = "1"
 [dev-dependencies]
 paste = "1"
 itertools = "0.13"
+# benchmarks
+criterion = {  version = "0.5", features = ["html_reports"] }
 
 [workspace]
 resolver = "2"
-members = ["./cli"]
+members = ["./cli", "./fuzz"]
 
 
 [features]
@@ -56,6 +58,7 @@ optimized-impl = []
 # but avoids the `regex` dependency and is much more efficient.
 prefer-optimized-impl = []
 
-
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("naive-impl"))'] }
+[[bench]]
+name = "basic"
+harness = false
+required-features = ["naive-impl", "optimized-impl"]

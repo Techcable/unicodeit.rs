@@ -11,26 +11,51 @@ macro_rules! assert_func {
     };
 }
 
+pub(crate) fn replace_optimized_func() -> ReplaceFunc {
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "optimized-impl")] {
+            unicodeit::replace_optimized
+        } else if #[cfg(feature = "prefer-optimized-impl")] {
+            unicodeit::replace
+        } else {
+            unreachable!("disabled")
+        }
+    }
+}
+
+pub(crate) fn replace_naive_func() -> ReplaceFunc {
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "naive-impl")] {
+            unicodeit::replace_naive
+        } else if #[cfg(not(feature = "prefer-optimized-impl"))] {
+            unicodeit::replace
+        } else {
+            unreachable!("feature disabled")
+        }
+    }
+}
+
 #[macro_export]
 macro_rules! declare_tests {
     ($($name:ident),*) => {
         paste::paste! {
             $(
                 #[test]
-                fn [<test_ $name>]() {
-                    [<do_test_ $name>](unicodeit::replace)
+                #[cfg_attr(not(any(
+                    feature = "optimized-impl",
+                    feature = "prefer-optimized-impl",
+                )), ignore)]
+                fn [<test_optimized_ $name>]() {
+                    [<do_test_ $name>]($crate::common::replace_optimized_func())
                 }
 
                 #[test]
-                #[cfg_attr(not(feature = "naive-impl"), ignore)]
+                #[cfg_attr(not(any(
+                    feature = "naive-impl",
+                    not(feature = "optimized-impl"),
+                )), ignore)]
                 fn [<test_naive_ $name>]() {
-                    cfg_if::cfg_if! {
-                        if #[cfg(feature = "naive-impl")] {
-                            [<do_test_ $name>](unicodeit::replace_naive)
-                        } else {
-                            unreachable!("feature disabled")
-                        }
-                    }
+                    [<do_test_ $name>]($crate::common::replace_naive_func())
                 }
             )*
         }

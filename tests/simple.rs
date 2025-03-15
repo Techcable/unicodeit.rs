@@ -20,4 +20,21 @@ fn do_test_combining(replace: ReplaceFunc) {
     do_assert(r#"\breve{"#, r#"\breve{"#);
 }
 
-declare_tests!(basic, combining);
+fn do_test_past_bugs(replace: ReplaceFunc) {
+    let do_assert = assert_func!(replace);
+    // these were all found with `cargo fuzz`
+    do_assert(r#"G_{}"#, "G_{}");
+    do_assert(r#"_{(-,-}"#, "₍₋_,₋");
+    do_assert(r#"_{(-,-}ZT'\\"#, r#"₍₋_,₋ZT'\\"#);
+    do_assert(r#"^{zz}z^{zz}z\u{6}{}\u{6}{}}"#, r#"ᶻᶻzᶻᶻz\u{6}{}\u{6}{}}"#);
+    do_assert(
+        "-[\\ vac{\u{1}\0\0\0\0\0~\\ vec{a---{",
+        "−[\\ vac{\u{1}\0\0\0\0\0~a⃗−−{",
+    );
+    do_assert(
+        "-b\u{b}\\ hat{\\}{-\u{b}z\u{1a}\0\0\0{^(-^{(---;z(NBA}~--;",
+        "−b\u{b}}\u{302}−\u{b}z\u{1a}\0\0\0{⁽−⁽⁻⁻⁻^;ᶻ⁽ᴺᴮᴬ~−−;",
+    );
+}
+
+declare_tests!(basic, combining, past_bugs);
