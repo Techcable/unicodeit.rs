@@ -22,17 +22,30 @@ pub fn replace(text: &str) -> String {
         REGEX.replace_all(text, r#"\slash{$1}""#).into_owned()
     };
     // escape combining marks with a space after the backslash
+    let mut scratch_buffer = String::new();
     for &(key, _val) in crate::data::COMBINING_MARKS {
-        text = text.replace(&format!("{key}{{"), &format!("\\ {}{{", &key[1..]));
+        scratch_buffer.clear();
+        scratch_buffer.push_str(key);
+        scratch_buffer.push('{');
+        if contains(&text, &scratch_buffer) {
+            text = text.replace(&scratch_buffer, &format!("\\ {}{{", &key[1..]));
+        }
     }
 
     // replace
     for &(key, val) in crate::data::REPLACEMENTS {
-        text = text.replace(key, val);
+        if contains(&text, key) {
+            text = text.replace(key, val);
+        }
 
         // check whether it was escaped for combining marks but has empty braces
         if key.ends_with("{}") {
-            text = text.replace(&format!("\\ {}", &key[1..]), val);
+            scratch_buffer.clear();
+            scratch_buffer.push_str("\\ ");
+            scratch_buffer.push_str(&key[1..]);
+            if contains(&text, &scratch_buffer) {
+                text = text.replace(&scratch_buffer, val);
+            }
         }
     }
 
@@ -105,13 +118,19 @@ pub fn replace(text: &str) -> String {
 
     // now replace subsuperscripts
     for &(key, val) in crate::data::SUB_SUPER_SCRIPTS {
-        text = text.replace(key, val);
+        if contains(&text, key) {
+            text = text.replace(key, val);
+        }
     }
 
     // process combining marks first
     for &(key, val) in crate::data::COMBINING_MARKS {
-        let escaped_latex = format!("\\ {}{{", &key[1..]);
-        while let Some(find_index) = text.find(&escaped_latex) {
+        scratch_buffer.clear();
+        scratch_buffer.push_str("\\ ");
+        scratch_buffer.push_str(&key[1..]);
+        scratch_buffer.push('{');
+        let escaped_latex = &scratch_buffer;
+        while let Some(find_index) = find(&text, escaped_latex) {
             if text.len() <= find_index + escaped_latex.len() {
                 // incomplete: unescape and continue
                 text.truncate(find_index);
@@ -139,4 +158,17 @@ pub fn replace(text: &str) -> String {
     }
 
     text
+}
+
+// optimized string search
+
+#[inline]
+fn find(haystack: &str, needle: &str) -> Option<usize> {
+    // surprisingly this is a massive 300% performance improvement over using the stdlib,
+    memchr::memmem::find(haystack.as_bytes(), needle.as_bytes())
+}
+
+#[inline]
+fn contains(haystack: &str, needle: &str) -> bool {
+    find(haystack, needle).is_some()
 }
