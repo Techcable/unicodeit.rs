@@ -55,7 +55,3 @@ optimized-impl = []
 # The behavior may occasionally differ from the orgiinal library,
 # but avoids the `regex` dependency and is much more efficient.
 prefer-optimized-impl = []
-
-
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("naive-impl"))'] }
