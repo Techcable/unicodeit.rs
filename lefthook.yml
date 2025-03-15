@@ -1,0 +1,22 @@
+skip_output:
+  - meta
+  - success
+  - summary
+pre-commit:
+  parallel: true
+  commands:
+    rustfmt:
+      tags: formatter
+      glob: "*.rs"
+      run: cargo fmt --check -- {staged_files}
+    # Run ruff directly instead of through uv tool run.
+    # According to my test of `ruff --version` with hyperfine, this saves about 10 ms.
+    # Users don't have to enable this commit hook if they don't have ruff on their path.
+    black:
+      tags: formatter,python
+      glob: "*.{py,pyi}"
+      run: ruff format --check -- {staged_files}
+    isort:
+      tags: formatter,python
+      glob: "*.{py,pyi}"
+      run: ruff check --select 'I' --output-format 'concise' -- {staged_files}
