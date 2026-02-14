@@ -24,9 +24,21 @@ fn do_test_subscript_minus1(replace: ReplaceFunc) {
     do_assert("cm_{-1}", "cm₋₁")
 }
 
+fn do_test_multiple_subscript_groups(replace: ReplaceFunc) {
+    let do_assert = assert_func!(replace);
+    do_assert("a_{01}b_{23}", "a₀₁b₂₃");
+}
+
+fn do_test_multiple_superscript_groups(replace: ReplaceFunc) {
+    let do_assert = assert_func!(replace);
+    do_assert("a^{01}b^{23}", "a⁰¹b²³");
+}
+
 declare_tests!(
     superscript_12,
     superscript_minus1,
     subscript_12,
-    subscript_minus1
+    subscript_minus1,
+    multiple_subscript_groups,
+    multiple_superscript_groups
 );

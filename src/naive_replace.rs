@@ -58,10 +58,11 @@ pub fn replace(text: &str) -> String {
             // f = f[:s.start() + offset] + newstring + f[s.end() + offset:]
             let mut buffer = String::with_capacity(text.len() + new_string.len());
             {
-                let offset = usize::try_from(offset).unwrap();
-                buffer.push_str(&text[..s.start() + offset]);
+                let start = (s.start() as isize + offset) as usize;
+                let end = (s.end() as isize + offset) as usize;
+                buffer.push_str(&text[..start]);
                 buffer.push_str(&new_string);
-                buffer.push_str(&text[s.end() + offset..]);
+                buffer.push_str(&text[end..]);
             }
             text = buffer;
             let count = isize::try_from(count).unwrap();
