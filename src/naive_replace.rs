@@ -43,32 +43,17 @@ pub fn replace(text: &str) -> String {
         replace_char: char,
     ) -> String {
         assert!(matches!(replace_char, '^' | '_'));
-        let mut offset = 0isize;
-        let mut text = orig_text.to_string();
-        for s in find_regex.find_iter(orig_text) {
-            let mut count = 0usize;
-            let target_text = s.as_str();
-            let new_string = sub_regex.replace_all(
-                &target_text[2..target_text.len() - 1],
-                |c: &regex::Captures| {
-                    count += 1;
-                    format!("{replace_char}{}", &c[0])
-                },
-            );
-            // f = f[:s.start() + offset] + newstring + f[s.end() + offset:]
-            let mut buffer = String::with_capacity(text.len() + new_string.len());
-            {
-                let start = (s.start() as isize + offset) as usize;
-                let end = (s.end() as isize + offset) as usize;
-                buffer.push_str(&text[..start]);
-                buffer.push_str(&new_string);
-                buffer.push_str(&text[end..]);
-            }
-            text = buffer;
-            let count = isize::try_from(count).unwrap();
-            offset += (count * 2) - (count + 3);
-        }
-        text
+        find_regex
+            .replace_all(orig_text, |caps: &regex::Captures| {
+                let matched = &caps[0];
+                let inner = &matched[2..matched.len() - 1];
+                sub_regex
+                    .replace_all(inner, |c: &regex::Captures| {
+                        format!("{replace_char}{}", &c[0])
+                    })
+                    .into_owned()
+            })
+            .into_owned()
     }
     // expand groups of subscripts: \_{01234}
     {
