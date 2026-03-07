@@ -1,0 +1,3 @@
+[submodule "unicodeit"]
+	path = unicodeit
+	url = https://github.com/svenkreiss/unicodeit
