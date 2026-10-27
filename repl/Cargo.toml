@@ -1,0 +1,19 @@
+[package]
+name = "unicodeit-repl"
+description = "An interactive REPL for unicodeit that copies results to the clipboard"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
+readme.workspace = true
+
+[dependencies]
+# Only text is needed, so skip the default image support
+arboard = { version = "3.7.0", default-features = false }
+rustyline = "19.0.0"
+unicodeit = { path = "..", version = "0.2.0" }
+
+[[bin]]
+name = "unicodeit-repl"
+path = "src/main.rs"

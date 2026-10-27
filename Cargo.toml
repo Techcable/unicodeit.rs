@@ -29,7 +29,8 @@ itertools = "0.13"
 
 [workspace]
 resolver = "2"
-members = ["./cli"]
+members = ["./cli", "./repl"]
+default-members = ["./cli", "./repl"]
 
 
 [features]
