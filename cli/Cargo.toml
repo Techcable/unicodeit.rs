@@ -18,5 +18,5 @@ name = "unicodeit"
 path = "src/main.rs"
 
 [package.metadata.binstall]
-pkg-url = "{ repo }/releases/download/v{ version }/unicodeit-{version}-{ target }"
+pkg-url = "{ repo }/releases/download/v{ version }/unicodeit-{version}-{ target }{ binary-ext }"
 pkg-fmt = "bin"

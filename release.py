@@ -10,16 +10,20 @@ import sys
 from pathlib import Path
 
 
+def target_extension(target: str):
+    return ".exe" if "windows" in target else ""
+
+
 def binary_name(*, binary: str, target: str, version: str) -> str:
-    return f"{binary}-{version}-{target}"
+    return f"{binary}-{version}-{target}" + target_extension(target)
 
 
 SUPPORTED_PLATFORMS = [
-    # TODO: No windows support
     "x86_64-apple-darwin",
     "aarch64-apple-darwin",
     "x86_64-unknown-linux-musl",
     "aarch64-unknown-linux-musl",
+    "x86_64-pc-windows-gnu",
 ]
 BINARIES = ["unicodeit", "unicodeit-repl"]
 
@@ -77,7 +81,7 @@ def main():
         target_build_dir = Path("target", target, "release")
         assert target_build_dir.is_dir()
         for binary in BINARIES:
-            desired_binary = target_build_dir / binary
+            desired_binary = target_build_dir / (binary + target_extension(target))
             assert desired_binary.is_file()
             result_binary_path = out_dir / binary_name(
                 target=target, version=args.version, binary=binary
