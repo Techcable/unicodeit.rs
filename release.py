@@ -9,8 +9,8 @@ import subprocess
 from pathlib import Path
 
 
-def binary_name(*, target: str, version: str) -> str:
-    return f"unicodeit-{version}-{target}"
+def binary_name(*, binary: str, target: str, version: str) -> str:
+    return f"{binary}-{version}-{target}"
 
 
 SUPPORTED_PLATFORMS = [
@@ -20,6 +20,7 @@ SUPPORTED_PLATFORMS = [
     "x86_64-unknown-linux-musl",
     "aarch64-unknown-linux-musl",
 ]
+BINARIES = ["unicodeit", "unicodeit-repl"]
 
 
 def main():
@@ -65,21 +66,24 @@ def main():
         )
         target_build_dir = Path("target", target, "release")
         assert target_build_dir.is_dir()
-        desired_binary = target_build_dir / "unicodeit"
-        assert desired_binary.is_file()
-        result_binary_path = out_dir / binary_name(target=target, version=args.version)
-        shutil.copy2(desired_binary, result_binary_path)
-        with open(f"{result_binary_path}.sha256sum", "wt") as hashfile:
-            subprocess.run(
-                ["sha256sum", result_binary_path],
-                check=True,
-                stdout=hashfile,
+        for binary in BINARIES:
+            desired_binary = target_build_dir / binary
+            assert desired_binary.is_file()
+            result_binary_path = out_dir / binary_name(
+                target=target, version=args.version, binary=binary
             )
-        subprocess.run(
-            ["gpg", "--armor", "--detach-sign", result_binary_path.name],
-            cwd=out_dir,
-            check=True,
-        )
+            shutil.copy2(desired_binary, result_binary_path)
+            with open(f"{result_binary_path}.sha256sum", "wt") as hashfile:
+                subprocess.run(
+                    ["sha256sum", result_binary_path],
+                    check=True,
+                    stdout=hashfile,
+                )
+            subprocess.run(
+                ["gpg", "--armor", "--detach-sign", result_binary_path.name],
+                cwd=out_dir,
+                check=True,
+            )
 
 
 if __name__ == "__main__":
