@@ -89,7 +89,8 @@ def main():
             shutil.copy2(desired_binary, result_binary_path)
             with open(f"{result_binary_path}.sha256sum", "wt") as hashfile:
                 subprocess.run(
-                    ["sha256sum", result_binary_path],
+                    ["sha256sum", result_binary_path.name],
+                    cwd=out_dir,
                     check=True,
                     stdout=hashfile,
                 )
