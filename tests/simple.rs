@@ -12,6 +12,16 @@ fn do_test_basic(replace: ReplaceFunc) {
     do_assert(r#"\alpha"#, "\u{3b1}");
 }
 
+fn do_test_dots(replace: ReplaceFunc) {
+    let do_assert = assert_func!(replace);
+    do_assert(r#"\dots"#, "\u{2026}");
+    do_assert(r#"a, \dots, z"#, "a, \u{2026}, z");
+    do_assert(
+        r#"\ldots \cdots \vdots \ddots"#,
+        "\u{2026} \u{22ef} \u{22ee} \u{22f1}",
+    );
+}
+
 fn do_test_combining(replace: ReplaceFunc) {
     let do_assert = assert_func!(replace);
     do_assert(r#"\dot{a}"#, "a\u{307}");
@@ -20,4 +30,4 @@ fn do_test_combining(replace: ReplaceFunc) {
     do_assert(r#"\breve{"#, r#"\breve{"#);
 }
 
-declare_tests!(basic, combining);
+declare_tests!(basic, combining, dots);

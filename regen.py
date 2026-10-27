@@ -10,6 +10,11 @@ import operator
 import sys
 from pathlib import Path
 
+# Extra replacements that are not present in upstream unicodeit
+EXTRA_REPLACEMENTS = [
+    ("\\dots", "…"),
+]
+
 
 def regenerate_data(base_dir=Path(__file__).parent):
     data_module = base_dir / "unicodeit/unicodeit/data.py"
@@ -63,8 +68,14 @@ def regenerate_data(base_dir=Path(__file__).parent):
                     print(" " * 4 + f'(r##"{key}"##, "{escape_chars(val)}"),')
             print("];")
 
+        # Must remain sorted by descending length, so longer commands match first.
+        # The sort is stable, preserving the upstream order for equal lengths.
+        replacements = sorted(
+            unicodeit.data.REPLACEMENTS + EXTRA_REPLACEMENTS,
+            key=lambda element: -len(element[0]),
+        )
         target_tables = {
-            "REPLACEMENTS": unicodeit.data.REPLACEMENTS,
+            "REPLACEMENTS": replacements,
             "COMBINING_MARKS": unicodeit.data.COMBININGMARKS,
             "SUB_SUPER_SCRIPTS": unicodeit.data.SUBSUPERSCRIPTS,
         }

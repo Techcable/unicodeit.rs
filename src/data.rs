@@ -4109,6 +4109,7 @@ pub const REPLACEMENTS: &[(&str, &str)] = &[
     (r##"\mttx"##, "\u{1d6a1}"),
     (r##"\mtty"##, "\u{1d6a2}"),
     (r##"\mttz"##, "\u{1d6a3}"),
+    (r##"\dots"##, "\u{2026}"),
     (r##"\leq"##, "\u{2264}"),
     (r##"\Cup"##, "\u{22d3}"),
     (r##"\Psi"##, "\u{3a8}"),
