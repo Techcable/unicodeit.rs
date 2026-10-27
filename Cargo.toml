@@ -25,7 +25,7 @@ cfg-if = "1"
 
 [dev-dependencies]
 paste = "1"
-itertools = "0.13"
+itertools = "0.15"
 
 [workspace]
 resolver = "2"
