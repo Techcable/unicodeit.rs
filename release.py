@@ -6,6 +6,7 @@ Uses `zigbuild` for cross compilation."""
 import argparse
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -21,6 +22,14 @@ SUPPORTED_PLATFORMS = [
     "aarch64-unknown-linux-musl",
 ]
 BINARIES = ["unicodeit", "unicodeit-repl"]
+
+
+def determine_build_command(target_platform: str):
+    if "apple-darwin" in target_platform and sys.platform == "darwin":
+        # using zigbuild when compiling for apple targets causes duplicate libraries to be linked
+        return "build"
+    else:
+        return "zigbuild"
 
 
 def main():
@@ -51,12 +60,13 @@ def main():
     out_dir.mkdir(exist_ok=False)
 
     for target in SUPPORTED_PLATFORMS:
+        build_command = determine_build_command(target)
         print(f"Building for {target!r}")
         subprocess.run(
             [
                 "cargo",
                 "+stable",
-                "zigbuild",
+                build_command,
                 "--target",
                 target,
                 "--workspace",
