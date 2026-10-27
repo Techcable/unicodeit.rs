@@ -4,3 +4,10 @@
 
 # release.py
 /staging
+
+# IntelliJ
+/.idea
+*.iml
+
+# Misc
+.DS_Store
